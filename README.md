@@ -12,7 +12,7 @@ of your choosing. For example, a 12V windshield wiper motor (worm gear) would wo
 motors.
 
 Video of servo in action:
-<iframe width="560" height="315" src="http://www.youtube.com/embed/V_V_hvIjvC8" frameborder="0" allowfullscreen></iframe>
+http://youtu.be/V_V_hvIjvC8
 
 Bill of Materials (BOM): https://docs.google.com/spreadsheet/ccc?key=0AlOm0VEWX2qMdGIxMThxUHNPeFVPeEotaU9RSDRENGc&usp=sharing
 
