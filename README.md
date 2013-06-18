@@ -1,7 +1,10 @@
 DIYServo
 ========
 
+http://www.diyservo.com
+
 DIY Servo Project - Create your own servo using any motor of your choosing
+
 
 This servo uses an Arduino Nano as a controller, and a Pololu MD01B as a motor driver.
 The prototype uses a Banebots P60 gearbox (planetary gearing) mated to an RS555 motor. Substitute any 12V motor
