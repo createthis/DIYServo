@@ -1,0 +1,6 @@
+Arduino Nano - Pololu MDB01
+          10 - INa
+          11 - PWM
+          12 - INb
+          5V - +5V (IN)
+         GND - GND

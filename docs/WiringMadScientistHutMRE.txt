@@ -1,0 +1,14 @@
+I've gotten an AS5040 10-bit magnetic rotary encoder, and an AS5045 12-bit, working, checking all the non-programmed interfaces. Both can be one-time programmed to output different code schemes, but they're not very useful for what I need so I'm not messing with them.
+In both cases I piggybacked the chip/breakout board off an Arduino, using the 3.3v supply. I rather randomly chose to use pins 2, 6, and 7 of the Arduino for the digital input: 6 is a chip select that also signals the start of an interface round, 7 acts as the clock from the Arduino to the chip, and 2 acts as the data transfer from the chip to the Arduino. These are trivially remapped.
+The code includes a debug setting that'll print out any faults the AS504x notices, but if you turn off the debug setting you'll just get degrees out. It reads from the chip and transmits to the host computer roughly once a second.
+
+-- John, Mon Dec 13, 2010 11:14 pm
+   http://www.madscientisthut.com
+
+More succinctly:
+  Arduino Nano - AS5040 Board
+           GND - GND
+           3v3 - VCC (+3.3v)
+             2 - SD Out
+             6 - CSEL
+             7 - CLK_IN
