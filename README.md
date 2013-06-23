@@ -11,7 +11,10 @@ The prototype uses a Banebots P60 gearbox (planetary gearing) mated to an RS555 
 of your choosing. For example, a 12V windshield wiper motor (worm gear) would work, or smaller hobby robotics
 motors.
 
-Video of servo in action:
+Video of latest gear driven MRE in action:
+http://youtu.be/2uWNyV8dUlA
+
+Older video of bearing plate mounted MRE in action:
 http://youtu.be/V_V_hvIjvC8
 
 Bill of Materials (BOM): https://docs.google.com/spreadsheet/ccc?key=0AlOm0VEWX2qMdGIxMThxUHNPeFVPeEotaU9RSDRENGc&usp=sharing
