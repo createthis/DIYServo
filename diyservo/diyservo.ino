@@ -24,6 +24,7 @@ int debug = 1; //SET THIS TO 0 TO DISABLE PRINTING OF ERROR CODES
 // the setup routine runs once when you press reset:
 void setup() { 
    Serial.begin(19200);
+   Serial.setTimeout(50);
    Serial.println("Started");
  
    pinMode(ENCODER_A_PIN, INPUT);
@@ -91,7 +92,7 @@ void loop() {
     }
   } else {
     if (!should_go_forward(position, positionGoal)) {
-      Serial.print("should go forward");
+      Serial.println("should go forward");
       if (lastState != "forward") {
         Serial.println("forward");
         myPololuDriver.SetSpeed(mySpeed);
@@ -99,7 +100,7 @@ void loop() {
         myPololuDriver.Run(POLOLU_FORWARD);
       }
     } else {
-      Serial.print("should reverse");
+      Serial.println("should reverse");
 
       if (lastState != "reverse") {
         Serial.println("reverse");
