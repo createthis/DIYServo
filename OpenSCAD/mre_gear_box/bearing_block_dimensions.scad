@@ -5,6 +5,7 @@ mre_bearing_diameter = 22.08;
 gearbox_far_edge_to_outside_edge_bearing = 63.26; // --> | gearbox | | bearing | <--
 support_width = 6.29; // same as motor plate dimension_thickness
 dimension_hole_diameter = 4.71; // This accepts a #10-32 x 1/2" screw.
+lid_screw_hole_diameter = 3.43; // This accepts a #6-32 screw
 mre_bearing_plate_thickness = 7.70; // This is the thickness of the aluminum gearbox block (the square part)
 mre_bearing_raised_edge_thickness = 3.67; // This is the round raised edge on the front of the motor.
 
@@ -41,13 +42,14 @@ dimension_side_to_hole = 7.05; // first hole on the y axis
 
 
 // Calculated
+lid_screw_hole_radius = lid_screw_hole_diameter/2;
 mre_bearing_radius = mre_bearing_diameter / 2;
 mre_bearing_radius_scaled = mre_bearing_radius / bearing_scale_factor;
 dimension_hole_radius = dimension_hole_diameter/2;
 dimension_hole_radius_scaled = dimension_hole_radius * scale_factor;
 bearing_gearbox_gap_thickness = gearbox_far_edge_to_outside_edge_bearing - gearbox_width - mre_bearing_diameter;
 bearing_plate_width = gearbox_width + support_width * 2;
-bearing_plate_length = gearbox_width * 2;
+bearing_plate_length = gearbox_width * 2 + support_width;
 dimension_distance_between_holes = gearbox_width - dimension_side_to_hole * 2;
 bearing_x = bearing_plate_width / 2;
 total_thickness = mre_bearing_plate_thickness + mre_bearing_raised_edge_thickness;
