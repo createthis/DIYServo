@@ -86,7 +86,7 @@ module arduino_nano_enclosure(cut_holes = true) {
 module arduino_nano_enclosure_holes() {
   // ICSP header cutout
   translate(v = [ 0,dimension_center_to_icsp_header,-1]) {
-    cube(size = [dimension_icsp_header_length,dimension_icsp_header_width,dimension_inner_height], center = true);
+    cube(size = [dimension_icsp_header_length,dimension_icsp_header_width,dimension_inner_height*2], center = true);
   }
 
   // USB header cutout
@@ -101,13 +101,13 @@ module arduino_nano_enclosure_holes() {
   // right
   translate(v = [ dimension_center_to_screw_hole_right,dimension_center_to_screw_hole_top,0]) {
     // outer
-    cylinder(h = dimension_height,r = dimension_screw_hole_radius,center = true, $fn = resolution);
+    cylinder(h = dimension_height*2,r = dimension_screw_hole_radius,center = true, $fn = resolution);
   }
 
   // left
   translate(v = [ -dimension_center_to_screw_hole_right,dimension_center_to_screw_hole_top,0]) {
     // outer
-    cylinder(h = dimension_height,r = dimension_screw_hole_radius,center = true, $fn = resolution);
+    cylinder(h = dimension_height*2,r = dimension_screw_hole_radius,center = true, $fn = resolution);
   }
 
   // bottom
@@ -115,13 +115,13 @@ module arduino_nano_enclosure_holes() {
   // right
   translate(v = [ dimension_center_to_screw_hole_right,-dimension_center_to_screw_hole_top,0]) {
     // outer
-    cylinder(h = dimension_height,r = dimension_screw_hole_radius,center = true, $fn = resolution);
+    cylinder(h = dimension_height*2,r = dimension_screw_hole_radius,center = true, $fn = resolution);
   }
 
   // left
   translate(v = [ -dimension_center_to_screw_hole_right,-dimension_center_to_screw_hole_top,0]) {
     // outer
-    cylinder(h = dimension_height,r = dimension_screw_hole_radius,center = true, $fn = resolution);
+    cylinder(h = dimension_height*2,r = dimension_screw_hole_radius,center = true, $fn = resolution);
   }
 }
 

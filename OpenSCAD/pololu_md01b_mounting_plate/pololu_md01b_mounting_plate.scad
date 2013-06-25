@@ -99,17 +99,17 @@ module pololu_md01b_mounting_plate_holes() {
     // left
     translate(v = [ dimension_center_to_hole_left,dimension_center_to_hole_top,0]) {
       // hole
-      cylinder(h = dimension_height,r = dimension_hole_radius_scaled,center = true, $fn = resolution);
+      cylinder(h = dimension_height*2,r = dimension_hole_radius_scaled,center = true, $fn = resolution);
     }
     // right
     translate(v = [ dimension_center_to_hole_right,dimension_center_to_hole_top,0]) {
       // support
-      cylinder(h = dimension_height,r = dimension_hole_radius_scaled,center = true, $fn = resolution);
+      cylinder(h = dimension_height*2,r = dimension_hole_radius_scaled,center = true, $fn = resolution);
     }
     // bottom right
     translate(v = [ dimension_center_to_hole_right,dimension_center_to_hole_bottom,0]) {
       // support
-      cylinder(h = dimension_height,r = dimension_hole_radius_scaled,center = true, $fn = resolution);
+      cylinder(h = dimension_height*2,r = dimension_hole_radius_scaled,center = true, $fn = resolution);
     }
   }
 }
