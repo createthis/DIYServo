@@ -48,7 +48,10 @@ function banebots_p60_distance_between_holes() = width - side_to_hole*2 - hole_r
 function banebots_p60_side_to_hole() = side_to_hole;
 
 module banebots_p60_bottom_bearing_block() {
-  cube(size=[banebots_p60_width(),banebots_p60_width(),banebots_p60_bearing_plate_thickness()],center=true);
+  difference() {
+    cube(size=[banebots_p60_width(),banebots_p60_width(),banebots_p60_bearing_plate_thickness()],center=true);
+    // TODO: mounting holes
+  }
 }
 
 module banebots_p60_gear_housing() {
@@ -65,6 +68,7 @@ module banebots_p60_top_bearing_block() {
     translate(v=[0,0,-banebots_p60_bearing_plate_thickness()/2 - (top_bearing_block_length - banebots_p60_bearing_plate_thickness() - raised_edge_thickness)/2]) {
       cylinder(r=gear_housing_radius,h=top_bearing_block_length - banebots_p60_bearing_plate_thickness() - raised_edge_thickness, center=true);
     }
+    // TODO: mounting holes
   }
 }
 

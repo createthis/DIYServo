@@ -4,10 +4,12 @@ use <../mre_gear_box/bearing_block.scad>
 use <../arduino_nano_enclosure/arduino_nano_enclosure.scad>
 
 // Measured Dimensions
+length_scale_factor = 1.01; // scale factor for my printer to make parts fit
 dimension_side_length = 103.51; // banebots p60 top to bottom + rs555 top to bottom - p60 top bearing plate thickness
 dimension_side_screw_hole_diameter = 3.43; // This accepts a #6-32 screw
 
 // Calculated Dimensions
+dimension_side_length_scaled = dimension_side_length / length_scale_factor; 
 side_screw_hole_radius = dimension_side_screw_hole_diameter / 2;
 dimension_thickness = mre_gearbox_support_width();
 dimension_side_width = banebots_p60_width() + dimension_thickness;
@@ -15,7 +17,7 @@ bottom_to_top = banebots_p60_bottom_to_top() - banebots_p60_bearing_plate_thickn
 bottom_to_top_hole_center = bottom_to_top - banebots_p60_top_to_hole() - banebots_p60_hole_radius();
 
 difference() {
-  cube(size=[dimension_side_width,dimension_side_length,dimension_thickness]);
+  cube(size=[dimension_side_width,dimension_side_length_scaled,dimension_thickness]);
 
   // Cutouts to save plastic and weight
   translate(v=[dimension_thickness,banebots_p60_bearing_plate_thickness(),0]){
@@ -28,7 +30,7 @@ difference() {
   translate(v=[dimension_thickness,banebots_p60_bottom_to_top() - banebots_p60_bearing_plate_thickness(),0]){
     cube(size=[
       dimension_side_width - dimension_thickness*2,
-      dimension_side_length - banebots_p60_bottom_to_top(),
+      dimension_side_length_scaled - banebots_p60_bottom_to_top(),
       dimension_thickness
     ]);
   }
