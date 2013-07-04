@@ -1,15 +1,29 @@
 /*
-  DIY Servo - Arduino driving VNH2SP30 Motor Driver Carrier MD01B
- 
-  This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+   DIY Servo - Arduino driving VNH2SP30 Motor Driver Carrier MD01B
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
  */
 
 #include <PololuDriver.h>
+#include <PID_v1.h>
+#include <PID_AutoTune_v0.h>
 
 #define ENCODER_A_PIN 2
 #define ENCODER_B_PIN 3
 
-long position;
+// PID Variables
+double currentPosition = 310;
+double distance = 0; // distance in degrees from currentPosition to positionGoal
+double distanceGoal = 0; // we always want the motor to be right on the money
+double motorSpeed = 0;
+double positionGoal = 120;
+double kp=0.001, ki=4, kd=0.45;
+double lowerSpeedLimit = 33;
+
+// AutoTune Library Variables
+double aTuneStep=40, aTuneNoise=1, aTuneStartValue=lowerSpeedLimit;
+unsigned int aTuneLookBack=20;
+byte ATuneModeRemember=2;
 
 PololuDriver myPololuDriver(11,10,12); // initialize instance of class
 
@@ -19,29 +33,45 @@ const int CSnPin = 6; //output to chip select
 const int inputPin = 2; //read AS5040
 
 int debug = 1; //SET THIS TO 0 TO DISABLE PRINTING OF ERROR CODES
+boolean tuning = false; // Set this to true to autotune PID values
 
-
-// the setup routine runs once when you press reset:
-void setup() { 
-   Serial.begin(19200);
-   Serial.setTimeout(50);
-   Serial.println("Started");
- 
-   pinMode(ENCODER_A_PIN, INPUT);
-   pinMode(ENCODER_B_PIN, INPUT);
-   
-   pinMode(ledPin, OUTPUT); // visual signal of I/O to chip
-   pinMode(clockPin, OUTPUT); // SCK
-   pinMode(CSnPin, OUTPUT); // CSn -- has to toggle high and low to signal chip to start data transfer
-   pinMode(inputPin, INPUT); // SDA
-   myPololuDriver.Run(POLOLU_STOP);
-}
-
-int mySpeed = 70; // 40 is the minimum to make the gearbox turn
-int positionGoal = 0;
 String currentState = "stop";
 String lastState = "stop";
 long lastAngle = 0;
+
+//Specify the links and initial tuning parameters
+PID myPID(&distance, &motorSpeed, &distanceGoal,kp,ki,kd, DIRECT);
+PID_ATune aTune(&currentPosition, &motorSpeed);
+
+// the setup routine runs once when you press reset:
+void setup() { 
+  Serial.begin(19200);
+  Serial.setTimeout(50);
+  Serial.println("Started");
+
+  pinMode(ENCODER_A_PIN, INPUT);
+  pinMode(ENCODER_B_PIN, INPUT);
+
+  pinMode(ledPin, OUTPUT); // visual signal of I/O to chip
+  pinMode(clockPin, OUTPUT); // SCK
+  pinMode(CSnPin, OUTPUT); // CSn -- has to toggle high and low to signal chip to start data transfer
+  pinMode(inputPin, INPUT); // SDA
+
+  myPololuDriver.Run(POLOLU_STOP);
+
+  currentPosition = read_angle();
+
+  //turn the PID on
+  myPID.SetMode(AUTOMATIC);
+  myPID.SetOutputLimits(lowerSpeedLimit,255);
+
+  if(tuning)
+  {
+    tuning=false;
+    changeAutoTune();
+    tuning=true;
+  }
+}
 
 long angle_diff(long angle1, long angle2) {
   return (abs(angle1 + 180 - angle2) % 360 - 180); 
@@ -54,63 +84,105 @@ boolean should_go_forward(long angle1, long angle2) {
 // the loop routine runs over and over again forever:
 void loop() {
   lastState = currentState;
-  
-  position = read_angle();
-  
+
+  currentPosition = read_angle();
+  distance = abs(angle_diff(currentPosition, positionGoal));
+
+  if(tuning)
+  {
+    byte val = (aTune.Runtime());
+    if (val!=0)
+    {
+      tuning = false;
+    }
+    if(!tuning)
+    { //we're done, set the tuning parameters
+      kp = aTune.GetKp();
+      ki = aTune.GetKi();
+      kd = aTune.GetKd();
+      myPID.SetTunings(kp,ki,kd);
+      AutoTuneHelper(false);
+      Serial.print("kp: ");Serial.print(myPID.GetKp());Serial.print(" ");
+      Serial.print("ki: ");Serial.print(myPID.GetKi());Serial.print(" ");
+      Serial.print("kd: ");Serial.print(myPID.GetKd());Serial.println();
+    }
+  }
+  else myPID.Compute();
+
+  myPololuDriver.SetSpeed((byte) motorSpeed);
+
   // send data only when you receive data:
   if (Serial.available() > 0) {
     myPololuDriver.Run(POLOLU_STOP);
     currentState = "stop";
     lastState = "stop";
     // read the incoming byte:
-    positionGoal = Serial.parseInt();
+    positionGoal = (double) Serial.parseInt();
 
     // say what you got:
     Serial.print("I received: ");
     Serial.println(positionGoal, DEC);
     Serial.print("myangle: ");
-    Serial.println(position, DEC);
+    Serial.println(currentPosition, DEC);
+
+    //if((positionGoal==0 && !tuning) || (positionGoal!=0 && tuning))changeAutoTune();
   } else {
-    if (abs(angle_diff(lastAngle,position)) > 1) {
-      Serial.print("myangle: ");
-      Serial.println(position, DEC);
-      Serial.print("positionGoal: ");
-      Serial.println(positionGoal, DEC);
-      Serial.print("angle_diff: ");
-      Serial.println(angle_diff(position, positionGoal), DEC);
+    if (abs(angle_diff(lastAngle,currentPosition)) > 1) {
+      //Serial.print("angle_diff: ");
+      //Serial.println(angle_diff(currentPosition, positionGoal), DEC);
+    }
+
+    if(tuning){
+      Serial.println("tuning mode");
     }
   }
-  
-  if (abs(angle_diff(position, positionGoal)) <= 6) {
+
+  if (abs(angle_diff(currentPosition, positionGoal)) == 0 /* 0 degree hysterisis */) {
     if (lastState != "stop") {
       Serial.println("stop");
-      Serial.print("position: ");
-      Serial.println(position, DEC);
-      myPololuDriver.SetSpeed(mySpeed);
+      Serial.print("currentPosition: ");
+      Serial.println(currentPosition, DEC);
+      myPololuDriver.SetSpeed((byte)motorSpeed);
       currentState = "stop";
       myPololuDriver.Run(POLOLU_STOP);
     }
   } else {
-    if (!should_go_forward(position, positionGoal)) {
-      Serial.println("should go forward");
+    if (!should_go_forward(currentPosition, positionGoal)) {
+      Serial.print("should go forward");
+      Serial.print(",distance=");
+      Serial.print(distance,DEC);
+      Serial.print(",motorSpeed=");
+      Serial.print(motorSpeed,DEC);
+      Serial.print(",currentPosition=");
+      Serial.print(currentPosition,DEC);
+      Serial.print(",positionGoal=");
+      Serial.println(positionGoal,DEC);
       if (lastState != "forward") {
         Serial.println("forward");
-        myPololuDriver.SetSpeed(mySpeed);
+        myPololuDriver.SetSpeed((byte)motorSpeed);
         currentState = "forward";
         myPololuDriver.Run(POLOLU_FORWARD);
       }
     } else {
-      Serial.println("should reverse");
+      Serial.print("should reverse");
+      Serial.print(",distance=");
+      Serial.print(distance,DEC);
+      Serial.print(",motorSpeed=");
+      Serial.print(motorSpeed,DEC);
+      Serial.print(",currentPosition=");
+      Serial.print(currentPosition,DEC);
+      Serial.print(",positionGoal=");
+      Serial.println(positionGoal,DEC);
 
       if (lastState != "reverse") {
         Serial.println("reverse");
-        myPololuDriver.SetSpeed(mySpeed);
+        myPololuDriver.SetSpeed((byte)motorSpeed);
         currentState = "reverse";
         myPololuDriver.Run(POLOLU_REVERSE);
       }
     }
   }
-  lastAngle = position;
+  lastAngle = currentPosition;
 }
 
 long read_angle()
@@ -128,7 +200,7 @@ long read_angle()
   int LIN; //bit holding magnet field displacement error data
   int shortdelay = 100; // this is the microseconds of delay in the data clock
   int longdelay = 10; // this is the milliseconds between readings
-  
+
   // CSn needs to cycle from high to low to initiate transfer. Then clock cycles. As it goes high
   // again, data will appear on sda
   digitalWrite(CSnPin, HIGH); // CSn high
@@ -188,12 +260,40 @@ long read_angle()
       if (DECn) { Serial.println("magnet moved away from chip"); }
       if (INCn) { Serial.println("magnet moved towards chip"); }
     }
-      if (LIN) { Serial.println("linearity alarm: magnet misaligned? Data questionable."); }
-      if (COF) { Serial.println("cordic overflow: magnet misaligned? Data invalid."); }
+    if (LIN) { Serial.println("linearity alarm: magnet misaligned? Data questionable."); }
+    if (COF) { Serial.println("cordic overflow: magnet misaligned? Data invalid."); }
   }
-  
-  return angle;
-  
+
+  return (double) angle;
+
   packeddata = 0; // reset both variables to zero so they don't just accumulate
   angle = 0;
+}
+
+void changeAutoTune()
+{
+  if(!tuning)
+  {
+    //Set the output to the desired starting frequency.
+    motorSpeed=aTuneStartValue;
+    aTune.SetNoiseBand(aTuneNoise);
+    aTune.SetOutputStep(aTuneStep);
+    aTune.SetLookbackSec((int)aTuneLookBack);
+    AutoTuneHelper(true);
+    tuning = true;
+  }
+  else
+  { //cancel autotune
+    aTune.Cancel();
+    tuning = false;
+    AutoTuneHelper(false);
+  }
+}
+
+void AutoTuneHelper(boolean start)
+{
+  if(start)
+    ATuneModeRemember = myPID.GetMode();
+  else
+    myPID.SetMode(ATuneModeRemember);
 }
