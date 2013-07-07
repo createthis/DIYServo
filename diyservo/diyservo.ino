@@ -17,11 +17,13 @@ double distance = 0; // distance in degrees from currentPosition to positionGoal
 double distanceGoal = 0; // we always want the motor to be right on the money
 double motorSpeed = 0;
 double positionGoal = 120;
-double kp=0.001, ki=4, kd=0.45;
+double kp=0.000001, ki=0, kd=40;
+/* kd=0.005 kind of stable */
+double upperSpeedLimit = 255;
 double lowerSpeedLimit = 33;
 
 // AutoTune Library Variables
-double aTuneStep=40, aTuneNoise=1, aTuneStartValue=lowerSpeedLimit;
+double aTuneStep=80, aTuneNoise=1, aTuneStartValue=(upperSpeedLimit - lowerSpeedLimit) / 2 + lowerSpeedLimit;
 unsigned int aTuneLookBack=20;
 byte ATuneModeRemember=2;
 
@@ -63,13 +65,14 @@ void setup() {
 
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(lowerSpeedLimit,255);
+  myPID.SetOutputLimits(lowerSpeedLimit,upperSpeedLimit);
 
   if(tuning)
   {
     tuning=false;
     changeAutoTune();
     tuning=true;
+    Serial.println("tuning mode");
   }
 }
 
@@ -133,21 +136,24 @@ void loop() {
     }
 
     if(tuning){
-      Serial.println("tuning mode");
+      //Serial.println("tuning mode");
     }
   }
 
   if (abs(angle_diff(currentPosition, positionGoal)) == 0 /* 0 degree hysterisis */) {
     if (lastState != "stop") {
+/*
       Serial.println("stop");
       Serial.print("currentPosition: ");
       Serial.println(currentPosition, DEC);
+*/
       myPololuDriver.SetSpeed((byte)motorSpeed);
       currentState = "stop";
       myPololuDriver.Run(POLOLU_STOP);
     }
   } else {
     if (!should_go_forward(currentPosition, positionGoal)) {
+/*
       Serial.print("should go forward");
       Serial.print(",distance=");
       Serial.print(distance,DEC);
@@ -157,13 +163,15 @@ void loop() {
       Serial.print(currentPosition,DEC);
       Serial.print(",positionGoal=");
       Serial.println(positionGoal,DEC);
+*/
       if (lastState != "forward") {
-        Serial.println("forward");
+//        Serial.println("forward");
         myPololuDriver.SetSpeed((byte)motorSpeed);
         currentState = "forward";
         myPololuDriver.Run(POLOLU_FORWARD);
       }
     } else {
+/*
       Serial.print("should reverse");
       Serial.print(",distance=");
       Serial.print(distance,DEC);
@@ -173,9 +181,10 @@ void loop() {
       Serial.print(currentPosition,DEC);
       Serial.print(",positionGoal=");
       Serial.println(positionGoal,DEC);
+*/
 
       if (lastState != "reverse") {
-        Serial.println("reverse");
+//        Serial.println("reverse");
         myPololuDriver.SetSpeed((byte)motorSpeed);
         currentState = "reverse";
         myPololuDriver.Run(POLOLU_REVERSE);
@@ -198,14 +207,15 @@ long read_angle()
   int OCF; //bit holding startup-valid bit
   int COF; //bit holding cordic DSP processing error data
   int LIN; //bit holding magnet field displacement error data
-  int shortdelay = 100; // this is the microseconds of delay in the data clock
-  int longdelay = 10; // this is the milliseconds between readings
+  int shortdelay = 40; // this is the microseconds of delay in the data clock
+  int longdelay = 1; // this is the milliseconds between readings
 
   // CSn needs to cycle from high to low to initiate transfer. Then clock cycles. As it goes high
   // again, data will appear on sda
   digitalWrite(CSnPin, HIGH); // CSn high
   digitalWrite(clockPin, HIGH); // CLK high
-  delay(longdelay);// time between readings
+  //delay(longdelay);// time between readings
+  delayMicroseconds(shortdelay); // delay for chip initialization
   digitalWrite(ledPin, HIGH); // signal start of transfer with LED
   digitalWrite(CSnPin, LOW); // CSn low: start of transfer
   delayMicroseconds(shortdelay); // delay for chip initialization
