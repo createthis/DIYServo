@@ -63,6 +63,7 @@ module mre_gearbox_cover() {
       // bearing cutout
       translate(v=[bearing_x,gearbox_far_edge_to_outside_edge_bearing - mre_bearing_radius_scaled,0]) {
         cylinder(r=mre_bearing_radius_scaled, h=gear_cutout_thickness + skate_bearing_thickness, $fn = resolution);
+        cylinder(r=skate_bearing_inner_race_recess_radius, h=gear_cutout_thickness + skate_bearing_thickness + skate_bearing_inner_race_recess_thickness, $fn = resolution);
       }
     }
   }
