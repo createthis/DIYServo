@@ -1,5 +1,5 @@
 gear_cover_air_space = 2;
-gear_thickness = 5.55;
+gear_thickness = 5.55; // shoulder measurement from gear down to bearing block.
 bearing_cage_cover_thickness = 3;
 output_gear_cutout_diameter = 28;
 
