@@ -15,7 +15,7 @@ dimension_lid_support_height = 3.10;
 dimension_arduino_nano_pcb_width = 17.84;
 dimension_arduino_nano_pcb_length = 43.24;
 dimension_arduino_nano_pcb_thickness = 1.66;
-dimension_arduino_nano_pcb_support_width = 2.65;
+dimension_arduino_nano_pcb_support_width = 2.56;
 
 // ICSP header
 dimension_icsp_header_length = 7.94;
